@@ -193,6 +193,10 @@ class ParadoxEmbeddings(EmbeddingModel):
         if single_input:
             return result[0]
         return result
+
+    def encode(self, text: Union[str, List[str]]) -> np.ndarray:
+        """Alias for embed() to match LatentMemoryEngine encoder interface."""
+        return self.embed(text)
     
     def embed_batch(
         self,
