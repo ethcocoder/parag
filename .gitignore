@@ -1,0 +1,70 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Jupyter
+.ipynb_checkpoints
+*.ipynb
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# FAISS indices
+*.faiss
+*.index
+index_data/
+indices/
+
+#Embeddings cache
+embeddings_cache/
+.embeddings/
+
+# Logs
+*.log
+logs/
+
+# Data
+data/
+*.pdf
+*.md
+!README.md
+!requirements.txt
+!doc/*.md
+
+# OS
+Thumbs.db
