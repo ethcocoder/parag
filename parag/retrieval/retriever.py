@@ -12,6 +12,14 @@ from parag.core.retrieval_result import RetrievalResult
 from parag.embeddings.base import EmbeddingModel
 from parag.vectorstore.faiss_store import FAISSVectorStore
 
+# Import ParadoxVectorStore
+try:
+    from parag.vectorstore.paradox_store import ParadoxVectorStore
+    PARADOX_AVAILABLE = True
+except ImportError:
+    PARADOX_AVAILABLE = False
+    ParadoxVectorStore = None
+
 
 class Retriever:
     """
@@ -24,7 +32,7 @@ class Retriever:
     def __init__(
         self,
         embedding_model: EmbeddingModel,
-        vector_store: FAISSVectorStore,
+        vector_store,  # FAISSVectorStore or ParadoxVectorStore
         score_threshold: Optional[float] = None,
     ):
         """
@@ -32,9 +40,15 @@ class Retriever:
         
         Args:
             embedding_model: Model for generating query embeddings
-            vector_store: FAISS vector store containing knowledge units
+            vector_store: Vector store (FAISS or ParadoxVectorStore)
             score_threshold: Minimum similarity score to include results
         """
+        # Detect store type
+        self.is_paradox_store = (
+            PARADOX_AVAILABLE and 
+            ParadoxVectorStore is not None and 
+            isinstance(vector_store, ParadoxVectorStore)
+        )
         self.embedding_model = embedding_model
         self.vector_store = vector_store
         self.score_threshold = score_threshold
