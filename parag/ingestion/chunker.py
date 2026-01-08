@@ -6,7 +6,23 @@ for embedding and retrieval.
 """
 
 from typing import List, Dict, Any, Optional
-from enum import Enum
+import re
+import numpy as np
+import sys
+import os
+
+# Add parent directory to path
+parent_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
+
+# Import Paradma
+try:
+    from paradma import learning, Axiom
+    PARADMA_AVAILABLE = True
+except ImportError:
+    PARADMA_AVAILABLE = False
+    learning = None
 from dataclasses import dataclass
 
 
@@ -227,7 +243,22 @@ class TextChunker:
             if sentence:
                 sentences.append(sentence)
         
-        return sentences
+        # Calculate mean and std of sentence lengths for adaptive chunking
+        if sentence_lengths:
+            # Use Paradma if available (self-learning!)
+            if PARADMA_AVAILABLE and learning:
+                try:
+                    lengths_axiom = Axiom(sentence_lengths, manifold=learning)
+                    mean_result = learning.mean(lengths_axiom)
+                    mean_length = mean_result.value if hasattr(mean_result, 'value') else mean_result
+                    # std not yet in Paradma autolearner, use NumPy
+                    std_length = np.std(sentence_lengths)
+                except:
+                    mean_length = np.mean(sentence_lengths)
+                    std_length = np.std(sentence_lengths)
+            else:
+                mean_length = np.mean(sentence_lengths)
+                std_length = np.std(sentence_lengths)
 
 
 def chunk_documents(

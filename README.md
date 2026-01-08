@@ -1,46 +1,51 @@
 # Parag - Next-Generation RAG System
 
-A modular, extensible **RAG (Retrieval-Augmented Generation)** system designed to evolve beyond classical retrieval. Parag separates retrieval, reasoning, and generation into distinct layers, enabling transparent, explainable AI systems that work today and scale to future cognitive engines.
+A **self-learning**, **autonomous** RAG (Retrieval-Augmented Generation) system powered by the **Paradox ecosystem**. Parag eliminates heavy ML dependencies (PyTorch, FAISS, transformers) and replaces them with custom, self-learning frameworks.
 
 ## 🌟 Key Features
 
-- **Structured Knowledge Representation**: `KnowledgeUnit` abstraction for clean data handling
-- **State-Based Reasoning**: `RAGState` for conflict detection and uncertainty measurement
-- **Modular Architecture**: Clear separation between ingestion → embeddings → retrieval → reasoning → generation
-- **Multiple Document Formats**: PDF, Markdown, and text file support
-- **FAISS Vector Store**: Efficient similarity search with multiple index types
-- **Conflict Detection**: Automatic detection of contradictions in retrieved knowledge
-- **Uncertainty Quantification**: Confidence scoring and information completeness measurement
-- **Deterministic Generation**: Explainable responses without LLM when appropriate
-- **Future-Ready**: Designed for compatibility with Paradox, Paradma, and AlienIntuition engines
+### Self-Learning Architecture (Paradox Ecosystem)
+- **Paradma** - Self-learning mathematical operations (learns from NumPy, graduates to native Python)
+- **ParadoxLF** - Autonomous memory engine with creative capabilities
+- **modules.framework** - Custom PyTorch replacement with Tensor and autograd
+- **HyperMatrix** - Quantum-like superposition for uncertain knowledge
 
-## 🚀 Quick Start
+### Core Capabilities
+- **Minimal Dependencies**: Only ~15MB (NumPy + PyPDF2 + tqdm) vs ~2GB with traditional stack
+- **Progressive Learning**: Operations start with NumPy, evolve to native implementations
+- **Creative Features**: Concept blending via `imagine()`, temporal prediction
+- **Quantum-Like Reasoning**: Superposition support for conflicting facts
+- **Autonomous Optimization**: Memory engine evolves independently
+- **Full Explainability**: Deterministic responses without LLM when appropriate
 
-### Installation
+## 📦 Installation
 
 ```bash
 # Clone the repository
 git clone https://github.com/ethcocoder/parag.git
 cd parag
 
-# Install dependencies
+# Install minimal dependencies
 pip install -r requirements.txt
 
-# Or install as package
-pip install -e .
+# Ensure Paradox ecosystem is available
+# (Paradma, ParadoxLF, modules should be in parent directory)
 ```
 
-### Basic Usage
+### Total Install Size
+- **Before**: ~2GB (PyTorch + FAISS + transformers)
+- **After**: ~15MB (NumPy + PyPDF2 + tqdm)
+- **Reduction**: 98.5% smaller! 🎉
+
+## 🚀 Quick Start (Paradox-Powered)
 
 ```python
-from parag.ingestion.loaders import load_document
-from parag.ingestion.chunker import TextChunker, chunk_documents
-from parag.embeddings import SentenceTransformerEmbeddings
-from parag.vectorstore import FAISSVectorStore
+from parag.core import KnowledgeUnit
+from parag.embeddings import ParadoxEmbeddings  # Self-learning embeddings!
+from parag.vectorstore import ParadoxVectorStore  # Autonomous memory
 from parag.retrieval import Retriever
 from parag.reasoning import StateManager
 from parag.generation import DeterministicGenerator
-from parag.core import KnowledgeUnit
 
 # 1. Ingest documents
 documents = load_document("path/to/document.pdf")

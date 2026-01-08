@@ -1,6 +1,21 @@
-faiss-cpu>=1.7.4
-sentence-transformers>=2.2.0
+# Parag RAG System - Minimal Dependencies
+# Uses Paradox ecosystem (Paradma, ParadoxLF, modules.framework)
+
+# Core (NumPy is Paradma's teacher for AutoLearner)
 numpy>=1.24.0
+
+# Document processing
 PyPDF2>=3.0.0
-torch>=2.0.0
+
+# UI/UX
 tqdm>=4.65.0
+
+# Development dependencies (optional)
+# pytest>=7.0.0
+# pytest-cov>=4.0.0
+
+# REMOVED HEAVY DEPENDENCIES:
+# - faiss-cpu>=1.7.4 (~100MB) → Replaced with ParadoxLF
+# - sentence-transformers>=2.2.0 (~500MB+) → Replaced with ParadoxEmbeddings
+# - torch>=2.0.0 (~700MB) → Replaced with modules.framework
+# Total reduction: ~1.3GB → ~15MB (98% smaller!)

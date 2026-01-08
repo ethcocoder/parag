@@ -5,9 +5,24 @@ Provides a clean abstraction for similarity search results,
 including knowledge units, scores, and ranking information.
 """
 
-from typing import List, Dict, Any, Optional
-from dataclasses import dataclass, field
+from typing import List, Dict, Any, Optional, Tuple
 import numpy as np
+from dataclasses import dataclass, field
+import sys
+import os
+
+# Add parent directory to path
+parent_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
+
+# Import Paradma
+try:
+    from paradma import learning, Axiom
+    PARADMA_AVAILABLE = True
+except ImportError:
+    PARADMA_AVAILABLE = False
+    learning = None
 
 from parag.core.knowledge_unit import KnowledgeUnit
 
@@ -88,9 +103,19 @@ class RetrievalResult:
         return sorted(list(sources))
     
     def get_average_score(self) -> float:
-        """Calculate average retrieval score."""
+        """Get average similarity score."""
         if not self.scores:
             return 0.0
+        
+        # Use Paradma if available (self-learning!)
+        if PARADMA_AVAILABLE and learning:
+            try:
+                scores_axiom = Axiom(self.scores, manifold=learning)
+                mean_result = learning.mean(scores_axiom)
+                return float(mean_result.value if hasattr(mean_result, 'value') else mean_result)
+            except:
+                pass  # Fall back to NumPy
+        
         return float(np.mean(self.scores))
     
     def get_max_score(self) -> float:

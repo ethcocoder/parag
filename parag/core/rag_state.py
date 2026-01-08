@@ -10,6 +10,30 @@ from typing import List, Dict, Any, Set, Optional, Tuple
 from dataclasses import dataclass, field
 from datetime import datetime
 import numpy as np
+import sys
+import os
+
+# Add parent directory to path
+parent_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
+
+# Import Paradma
+try:
+    from paradma import learning, Axiom
+    PARADMA_AVAILABLE = True
+except ImportError:
+    PARADMA_AVAILABLE = False
+    learning = None
+
+# Import HyperMatrix (optional)
+try:
+    from modules.knowledge.hyper_matrix import HyperMatrixStore, ConceptRecord
+    HYPERMATRIX_AVAILABLE = True
+except ImportError:
+    HYPERMATRIX_AVAILABLE = False
+    HyperMatrixStore = None
+    ConceptRecord = None
 
 from parag.core.knowledge_unit import KnowledgeUnit
 from parag.core.retrieval_result import RetrievalResult
@@ -46,6 +70,8 @@ class RAGState:
     conflicts: List[Tuple[str, str]] = field(default_factory=list)  # Pairs of conflicting fact IDs
     uncertainty: float = 0.0
     metadata: Dict[str, Any] = field(default_factory=dict)
+    hyper_matrix: Optional['HyperMatrixStore'] = None  # Optional HyperMatrix integration
+    _use_paradma: bool = True  # Prefer Paradma operations
     
     def __post_init__(self):
         """Initialize state metadata."""
