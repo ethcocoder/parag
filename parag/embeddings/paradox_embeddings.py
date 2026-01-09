@@ -142,10 +142,13 @@ class ParadoxEmbeddings(EmbeddingModel):
         self.use_paradma = use_paradma and PARADMA_AVAILABLE
         
         # Initialize tokenizer
-        self.tokenizer = SimpleTokenizer(vocab_size=vocab_size)
+        self.tokenizer = SimpleTokenizer()
+        
+        # Override vocab_size based on tokenizer if needed
+        self.vocab_size = self.tokenizer.vocab_size
         
         # Initialize embedding layer
-        self.embedding_layer = SimpleEmbeddingLayer(vocab_size, embedding_dim)
+        self.embedding_layer = SimpleEmbeddingLayer(self.vocab_size, embedding_dim)
         
         print(f"[ParadoxEmbeddings] Initialized: dim={embedding_dim}, "
               f"paradma={'ON' if self.use_paradma else 'OFF'}")
@@ -161,9 +164,8 @@ class ParadoxEmbeddings(EmbeddingModel):
         embeddings = []
         
         for txt in text:
-            # Tokenize
-            tokens = self.tokenizer.tokenize(txt)
-            token_ids = self.tokenizer.encode(tokens)
+            # SimpleTokenizer.encode directly takes strings
+            token_ids = self.tokenizer.encode(txt)
             
             # Get embeddings
             token_embeddings = self.embedding_layer.forward(token_ids)
@@ -228,9 +230,10 @@ class ParadoxEmbeddings(EmbeddingModel):
         # Convert to Axiom for Paradma operations
         data = token_embeddings.data if hasattr(token_embeddings, 'data') else token_embeddings
         
-        # Use Paradma's learning.mean() - this learns over time!
+        # Use Paradma - calling law directly on Axiom (Self-Learning!)
+        # Mean pooling requires averaging across the sequence dimension (axis=0)
         axiom_data = Axiom(data.tolist(), manifold=learning)
-        mean_result = learning.mean(axiom_data)
+        mean_result = axiom_data.mean(axis=0)
         
         # Convert back to NumPy
         result = mean_result.value if hasattr(mean_result, 'value') else mean_result
@@ -247,12 +250,13 @@ class ParadoxEmbeddings(EmbeddingModel):
         axiom = Axiom(vector.tolist(), manifold=learning)
         
         # Calculate norm using Paradma (sqrt of dot product)
-        dot_result = learning.dot(axiom, axiom)
+        # Calling laws directly on Axiom triggers Law Stealing from manifold
+        dot_result = axiom.dot(axiom)
         norm_squared = dot_result.value if hasattr(dot_result, 'value') else dot_result
         
         # Use Paradma's sqrt (self-learning!)
         norm_axiom = Axiom(norm_squared, manifold=learning)
-        norm_result = learning.sqrt(norm_axiom)
+        norm_result = norm_axiom.sqrt()
         norm = norm_result.value if hasattr(norm_result, 'value') else norm_result
         
         # Avoid division by zero

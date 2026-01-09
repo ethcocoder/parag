@@ -225,6 +225,7 @@ class TextChunker:
         For production, consider using NLTK or spaCy for better accuracy.
         """
         sentences = []
+        sentence_lengths = []
         current_sentence = []
         
         for char in text:
@@ -235,6 +236,7 @@ class TextChunker:
                 sentence = ''.join(current_sentence).strip()
                 if sentence:
                     sentences.append(sentence)
+                    sentence_lengths.append(len(sentence))
                 current_sentence = []
         
         # Add any remaining text
@@ -242,6 +244,7 @@ class TextChunker:
             sentence = ''.join(current_sentence).strip()
             if sentence:
                 sentences.append(sentence)
+                sentence_lengths.append(len(sentence))
         
         # Calculate mean and std of sentence lengths for adaptive chunking
         if sentence_lengths:
@@ -249,7 +252,7 @@ class TextChunker:
             if PARADMA_AVAILABLE and learning:
                 try:
                     lengths_axiom = Axiom(sentence_lengths, manifold=learning)
-                    mean_result = learning.mean(lengths_axiom)
+                    mean_result = lengths_axiom.mean()
                     mean_length = mean_result.value if hasattr(mean_result, 'value') else mean_result
                     # std not yet in Paradma autolearner, use NumPy
                     std_length = np.std(sentence_lengths)
@@ -259,6 +262,11 @@ class TextChunker:
             else:
                 mean_length = np.mean(sentence_lengths)
                 std_length = np.std(sentence_lengths)
+            
+            # Store in instance for potential adaptive use
+            self._last_stats = {"mean": mean_length, "std": std_length}
+        
+        return sentences
 
 
 def chunk_documents(

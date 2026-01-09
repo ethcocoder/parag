@@ -111,7 +111,7 @@ class RetrievalResult:
         if PARADMA_AVAILABLE and learning:
             try:
                 scores_axiom = Axiom(self.scores, manifold=learning)
-                mean_result = learning.mean(scores_axiom)
+                mean_result = scores_axiom.mean()
                 return float(mean_result.value if hasattr(mean_result, 'value') else mean_result)
             except:
                 pass  # Fall back to NumPy

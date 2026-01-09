@@ -33,10 +33,10 @@ def main():
     print("PARADOX RAG SYSTEM - Self-Learning Demo")
     print("=" * 70)
     print()
-    print("🔮 Using Paradox Ecosystem:")
-    print("  ✓ ParadoxEmbeddings (modules.framework + Paradma)")
-    print("  ✓ ParadoxVectorStore (ParadoxLF + Paradma backend)")
-    print("  ✓ KnowledgeUnit with Axiom embeddings")
+    print("[*] Using Paradox Ecosystem:")
+    print("  - ParadoxEmbeddings (modules.framework + Paradma)")
+    print("  - ParadoxVectorStore (ParadoxLF + Paradma backend)")
+    print("  - KnowledgeUnit with Axiom embeddings")
     print()
     
     # Step 1: Create sample documents
@@ -100,7 +100,7 @@ def main():
         knowledge_units.append(unit)
         
         # Check if using Paradma
-        status = "Axiom ✓" if unit.is_using_paradma() else "NumPy"
+        status = "Axiom [OK]" if unit.is_using_paradma() else "NumPy"
         print(f"  [{i+1}/{len(documents)}] {status}: {doc[:50]}...")
     
     # Step 5: Initialize retriever
@@ -186,9 +186,9 @@ def main():
     print(f"     Saved to: {vector_store.storage_dir}")
     
     print("\n" + "=" * 70)
-    print("✅ Paradox RAG Demo Complete!")
+    print("[DONE] Paradox RAG Demo Complete!")
     print("=" * 70)
-    print("\n📊 Summary:")
+    print("\nSummary:")
     print(f"  • Embeddings: Paradma self-learning enabled")
     print(f"  • Vector Store: ParadoxLF autonomous engine")
     print(f"  • Knowledge Units: Using Axiom embeddings")

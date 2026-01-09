@@ -227,12 +227,12 @@ class ParadoxVectorStore:
             ratio: Blending ratio (0.0 = all A, 1.0 = all B)
             
         Returns:
-            Blended vector
+            Blended vector (NumPy array)
         """
         # Use engine's creative blending
         blended = self.engine.imagine(
-            vector_a.tolist(),
-            vector_b.tolist(),
+            vector_a,
+            vector_b,
             ratio=ratio
         )
         

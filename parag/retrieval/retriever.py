@@ -178,9 +178,17 @@ class Retriever:
             if generate_embeddings or not unit.has_embedding():
                 content = str(unit.content)
                 embedding = self.embedding_model.embed(content)
-                unit.embedding = embedding
+                # Store back in unit (optionally as Axiom if enabled)
+                if hasattr(unit, 'set_embedding_from_numpy'):
+                    unit.set_embedding_from_numpy(embedding)
+                else:
+                    unit.embedding = embedding
             
-            embeddings.append(unit.embedding)
+            # Use NumPy version for vector store compatibility
+            if hasattr(unit, 'get_embedding_as_numpy'):
+                embeddings.append(unit.get_embedding_as_numpy())
+            else:
+                embeddings.append(unit.embedding)
             
             # Prepare metadata (including content for reconstruction)
             metadata = {**unit.metadata}
