@@ -20,6 +20,14 @@ except ImportError:
     PARADOX_AVAILABLE = False
     ParadoxVectorStore = None
 
+# Import Alien Intuition
+try:
+    from modules.reasoning.alien_intuition import AlienIntuition
+    ALIEN_AVAILABLE = True
+except ImportError:
+    ALIEN_AVAILABLE = False
+    AlienIntuition = None
+
 
 class Retriever:
     """
@@ -52,6 +60,11 @@ class Retriever:
         self.embedding_model = embedding_model
         self.vector_store = vector_store
         self.score_threshold = score_threshold
+        
+        # Initialize Alien Intuition if using Paradox store
+        self.intuition = None
+        if self.is_paradox_store and ALIEN_AVAILABLE:
+            self.intuition = AlienIntuition(vector_store.engine)
     
     def retrieve(
         self,
@@ -128,6 +141,13 @@ class Retriever:
             }
         )
         
+        # Geometrical Curvature (Alien Intuition)
+        if self.intuition:
+            curvature = self.intuition.perceive_curvature(query_embedding)
+            result.metadata["manifold_curvature"] = curvature
+            if curvature > 0.5:
+                result.metadata["intuition_signal"] = "high-complexity/speculative"
+        
         return result
     
     def batch_retrieve(
@@ -203,6 +223,24 @@ class Retriever:
         
         return ids
     
+    def cognitive_retrieve(self, query: str, max_turns: int = 2) -> 'RAGState':
+        """
+        Perform an autonomous cognitive retrieval loop.
+        
+        This method will automatically re-query the vector store if 
+        uncertainty or conflicts are detected.
+        
+        Args:
+            query: User query
+            max_turns: Maximum number of reflexive turns
+            
+        Returns:
+            Final RAGState with emotional and intuitive signals
+        """
+        from parag.core.cognitive_loop import CognitiveLoop
+        loop = CognitiveLoop(self, max_turns=max_turns)
+        return loop.run(query)
+
     def __repr__(self) -> str:
         """String representation."""
         return (

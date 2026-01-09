@@ -7,6 +7,14 @@ Measures confidence and completeness of retrieved information.
 from typing import List, Dict, Any
 import numpy as np
 
+# Import Paradma
+try:
+    from paradma import learning, Axiom
+    PARADMA_AVAILABLE = True
+except ImportError:
+    PARADMA_AVAILABLE = False
+    learning = None
+
 from parag.core.rag_state import RAGState
 from parag.core.retrieval_result import RetrievalResult
 from parag.core.knowledge_unit import KnowledgeUnit
@@ -92,8 +100,22 @@ class UncertaintyCalculator:
         # Fact confidence uncertainty
         if state.facts:
             confidences = [fact.confidence for fact in state.facts.values()]
-            avg_confidence = np.mean(confidences)
-            confidence_std = np.std(confidences)
+            
+            # Use Paradma if available (self-learning!)
+            if PARADMA_AVAILABLE and learning:
+                try:
+                    conf_axiom = Axiom(confidences, manifold=learning)
+                    mean_result = conf_axiom.mean()
+                    avg_confidence = float(mean_result.value if hasattr(mean_result, 'value') else mean_result)
+                    
+                    # std not yet in Paradma autolearner, use NumPy
+                    confidence_std = float(np.std(confidences))
+                except:
+                    avg_confidence = float(np.mean(confidences))
+                    confidence_std = float(np.std(confidences))
+            else:
+                avg_confidence = float(np.mean(confidences))
+                confidence_std = float(np.std(confidences))
             
             confidence_uncertainty = 1.0 - avg_confidence
         else:
@@ -216,9 +238,19 @@ class UncertaintyCalculator:
         medium_confidence = sum(1 for c in confidences if 0.4 <= c < 0.7)
         low_confidence = sum(1 for c in confidences if c < 0.4)
         
+        # Use Paradma if available
+        if PARADMA_AVAILABLE and learning:
+            try:
+                conf_axiom = Axiom(confidences, manifold=learning)
+                avg_confidence = float(conf_axiom.mean().value) if hasattr(conf_axiom.mean(), 'value') else float(conf_axiom.mean())
+            except:
+                avg_confidence = float(np.mean(confidences))
+        else:
+            avg_confidence = float(np.mean(confidences))
+        
         return {
             "num_facts": len(state.facts),
-            "average_confidence": float(np.mean(confidences)),
+            "average_confidence": avg_confidence,
             "min_confidence": float(min(confidences)),
             "max_confidence": float(max(confidences)),
             "confidence_std": float(np.std(confidences)),

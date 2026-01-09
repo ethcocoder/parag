@@ -24,6 +24,7 @@ except ImportError:
     PARADMA_AVAILABLE = False
     learning = None
 from dataclasses import dataclass
+from enum import Enum
 
 
 class ChunkingStrategy(Enum):

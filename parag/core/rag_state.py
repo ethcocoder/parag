@@ -27,6 +27,7 @@ except ImportError:
     learning = None
 
 # Import HyperMatrix (optional)
+# Import HyperMatrix (optional)
 try:
     from modules.knowledge.hyper_matrix import HyperMatrixStore, ConceptRecord
     HYPERMATRIX_AVAILABLE = True
@@ -34,6 +35,15 @@ except ImportError:
     HYPERMATRIX_AVAILABLE = False
     HyperMatrixStore = None
     ConceptRecord = None
+
+# Import AI Emotions
+try:
+    from modules.self_awareness.ai_emotions import AIEmotions, EmotionConfig
+    EMOTIONS_AVAILABLE = True
+except ImportError:
+    EMOTIONS_AVAILABLE = False
+    AIEmotions = None
+    EmotionConfig = None
 
 from parag.core.knowledge_unit import KnowledgeUnit
 from parag.core.retrieval_result import RetrievalResult
@@ -71,12 +81,17 @@ class RAGState:
     uncertainty: float = 0.0
     metadata: Dict[str, Any] = field(default_factory=dict)
     hyper_matrix: Optional['HyperMatrixStore'] = None  # Optional HyperMatrix integration
+    emotions: Optional['AIEmotions'] = field(default=None)
     _use_paradma: bool = True  # Prefer Paradma operations
+    _learning_stats: Dict[str, Any] = field(default_factory=dict)
     
     def __post_init__(self):
-        """Initialize state metadata."""
+        """Initialize state metadata and emotions."""
         if "created_at" not in self.metadata:
             self.metadata["created_at"] = datetime.now().isoformat()
+            
+        if self.emotions is None and EMOTIONS_AVAILABLE:
+            self.emotions = AIEmotions()
     
     @classmethod
     def from_retrieval_result(cls, result: RetrievalResult) -> 'RAGState':
@@ -166,6 +181,7 @@ class RAGState:
                     fact2.contradicting_facts.add(id1)
         
         self.conflicts = conflicts
+        self._calculate_uncertainty()
         return conflicts
     
     def _are_conflicting(self, content1: str, content2: str) -> bool:
@@ -213,7 +229,17 @@ class RAGState:
         
         # Calculate average confidence
         confidences = [fact.confidence for fact in self.facts.values()]
-        avg_confidence = np.mean(confidences)
+        
+        # Use Paradma if available (self-learning!)
+        if PARADMA_AVAILABLE and learning and self._use_paradma:
+            try:
+                conf_axiom = Axiom(confidences, manifold=learning)
+                mean_result = conf_axiom.mean()
+                avg_confidence = float(mean_result.value if hasattr(mean_result, 'value') else mean_result)
+            except:
+                avg_confidence = float(np.mean(confidences))
+        else:
+            avg_confidence = float(np.mean(confidences))
         
         # Penalize for conflicts
         conflict_penalty = len(self.conflicts) * 0.1
@@ -224,6 +250,15 @@ class RAGState:
         # Combine factors
         uncertainty = (1.0 - avg_confidence) + conflict_penalty + knowledge_penalty
         self.uncertainty = min(1.0, max(0.0, uncertainty))
+        
+        # Update AI Emotions if available
+        if self.emotions:
+            self.emotions.update_from_certainty(1.0 - self.uncertainty)
+            if self.conflicts:
+                self.emotions.update_from_feedback(0.8) # High feedback/conflict triggers Reflexion
+            
+            # Sync back to metadata
+            self.metadata["emotions"] = self.emotions.get_state()
     
     def get_high_confidence_facts(self, threshold: float = 0.7) -> List[Fact]:
         """Get facts with confidence above threshold."""
@@ -255,6 +290,27 @@ class RAGState:
             self.uncertainty <= max_uncertainty
         )
     
+    def _update_hyper_matrix(self):
+        """Update HyperMatrix with current facts and detect superposition/conflicts."""
+        if not HYPERMATRIX_AVAILABLE or not self.hyper_matrix:
+            return
+            
+        for fact_id, fact in self.facts.items():
+            # In a real implementation, we would extract embedding for the fact content
+            # For now, we use a placeholder or previous unit embeddings
+            concept = ConceptRecord(
+                name=fact_id,
+                value=fact.confidence,
+                metadata={"content": fact.content}
+            )
+            self.hyper_matrix.add_concept(concept)
+            
+        # Detect overlaps in latent space
+        # (This is where HyperMatrix shines with superposition)
+        overlaps = self.hyper_matrix.detect_overlaps()
+        if overlaps:
+            self.metadata["hyper_matrix_overlaps"] = len(overlaps)
+            
     def merge(self, other: 'RAGState') -> 'RAGState':
         """Merge with another RAGState."""
         merged = RAGState()
@@ -265,6 +321,10 @@ class RAGState:
         # Merge facts
         merged.facts = {**self.facts, **other.facts}
         
+        # Store in HyperMatrix if available (Quantum-like superposition)
+        if HYPERMATRIX_AVAILABLE and self.hyper_matrix:
+            self._update_hyper_matrix()
+            
         # Recalculate conflicts and uncertainty
         merged.detect_conflicts()
         merged._calculate_uncertainty()

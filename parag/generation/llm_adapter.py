@@ -5,7 +5,7 @@ Provides abstraction for integrating with various LLM backends.
 """
 
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Optional, List, Dict, Any
 from parag.core.rag_state import RAGState
 
 
@@ -99,6 +99,20 @@ class DeterministicGenerator:
                 reasoning_parts.append(
                     f"Uncertainty level: {state.uncertainty:.2f}"
                 )
+                
+            # Paradox Cognitive Signals
+            if "emotions" in state.metadata:
+                emotions = state.metadata["emotions"]
+                # Report strongest feelings
+                feelings = [f"{k}: {v:.2f}" for k, v in emotions.items() if v > 0.6 or v < 0.4]
+                if feelings:
+                    reasoning_parts.append(f"AI Emotions: {', '.join(feelings)}")
+                    
+            if "manifold_curvature" in state.metadata:
+                curvature = state.metadata["manifold_curvature"]
+                reasoning_parts.append(f"Manifold Curvature: {curvature:.4f}")
+                if "intuition_signal" in state.metadata:
+                    reasoning_parts.append(f"Intuition: {state.metadata['intuition_signal']}")
             
             response_parts.append("\n---")
             response_parts.append("Reasoning:")
@@ -134,10 +148,19 @@ class DeterministicGenerator:
             "",
             f"Available facts: {len(state.facts)}",
             f"Overall uncertainty: {state.uncertainty:.2f}",
+        ]
+        
+        if "emotions" in state.metadata:
+            emotions = state.metadata["emotions"]
+            reflexion = emotions.get("Reflexion", 0.0)
+            if reflexion > 0.6:
+                response.append(f"Reflexive State: High (Active conflict resolution required)")
+        
+        response.extend([
             "",
             "The available information does not meet reliability thresholds.",
             "Recommend seeking additional sources.",
-        ]
+        ])
         
         return "\n".join(response)
     
