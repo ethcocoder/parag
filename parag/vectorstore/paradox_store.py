@@ -41,6 +41,7 @@ class ParadoxVectorStore:
         self,
         dimension: int,
         storage_dir: Optional[str] = None,
+        backend: str = "paradma",
     ):
         """
         Initialize ParadoxVectorStore.
@@ -48,6 +49,7 @@ class ParadoxVectorStore:
         Args:
             dimension: Dimensionality of vectors
             storage_dir: Optional directory for persistence
+            backend: Backend to use ('paradma' or 'turbo')
         """
         if not PARADOXLF_AVAILABLE:
             raise ImportError(
@@ -56,11 +58,12 @@ class ParadoxVectorStore:
         
         self.dimension = dimension
         self.storage_dir = storage_dir
+        self.backend_type = backend
         
-        # Initialize ParadoxLF LatentMemoryEngine with Paradma backend
+        # Initialize ParadoxLF LatentMemoryEngine
         self.engine = LatentMemoryEngine(
             dimension=dimension,
-            backend="paradma",  # Use Paradma backend exclusively
+            backend=backend,
             storage_dir=storage_dir
         )
         
