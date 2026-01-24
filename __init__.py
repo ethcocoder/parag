@@ -14,13 +14,15 @@ Key Features:
 __version__ = "0.1.0"
 __author__ = "ethcocoder"
 
-from parag.core.knowledge_unit import KnowledgeUnit
-from parag.core.retrieval_result import RetrievalResult
-from parag.core.rag_state import RAGState
+from .core.knowledge_unit import KnowledgeUnit
+from .core.retrieval_result import RetrievalResult
+from .core.rag_state import RAGState
+from .knowledge_graph import KnowledgeGraph
 
 __all__ = [
     "KnowledgeUnit",
     "RetrievalResult",
     "RAGState",
+    "KnowledgeGraph",
     "__version__",
 ]
